@@ -1,8 +1,13 @@
 import axios from "axios";
 
-// Базовый URL для всех запросов к API
-const API_BASE_URL = "http://localhost:3000/api/v1";
+// Получение базового URL и версии API из переменных окружения
+const APP_BASE_URL = import.meta.env.VITE_APP_BASE_URL;
+const API_VERSION = import.meta.env.VITE_API_VERSION;
 
+// Полный базовый URL для API
+const API_BASE_URL = `${APP_BASE_URL}/${API_VERSION}`;
+
+// Создание экземпляра axios с базовой конфигурацией
 const apiClient = axios.create({
   baseURL: API_BASE_URL,
   headers: {

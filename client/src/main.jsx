@@ -1,16 +1,16 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App';
-import './index.css';
+import React from "react";
+import ReactDOM from "react-dom/client";
+import App from "./App";
+import "./index.css";
 
 // Импортируем Провайдеры из их отдельных файлов:
 // 1. AuthProvider
-import { AuthProvider } from './context/AuthProvider'; // Удалено расширение .jsx
+import { AuthProvider } from "./context/AuthProvider";
 // 2. LinkProvider
-import { LinkProvider } from './context/LinkProvider'; // Удалено расширение .jsx
+import { LinkProvider } from "./context/LinkProvider";
 
 // Устанавливаем корневой элемент
-const rootElement = document.getElementById('root');
+const rootElement = document.getElementById("root");
 
 // Запускаем приложение
 ReactDOM.createRoot(rootElement).render(

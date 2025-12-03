@@ -1,38 +1,45 @@
-import React, { useState } from "react";
+import React from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { useAuthForm } from "../../hooks/useAuthForm";
 import apiClient from "../../api/apiClient";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 
-// Упрощенная форма регистрации: только логин и пароль.
+// Компонент регистрации
 function Register({ onToggle }) {
-  const { login } = useAuth(); // Получаем функцию login из контекста
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const { login } = useAuth();
+  const {
+    username,
+    password,
+    message,
+    isLoading,
+    setUsername,
+    setPassword,
+    setMessage,
+    setIsLoading,
+  } = useAuthForm();
 
+  // ОБРАБОТЧИК РЕГИСТРАЦИИ
   const handleRegister = async (e) => {
     e.preventDefault();
     setMessage("");
     setIsLoading(true);
 
+    // ПОПЫТКА РЕГИСТРАЦИИ
     try {
-      // 1. Регистрируем пользователя
       const response = await apiClient.post("/auth/register", {
         username,
         password,
       });
 
-      // 2. Если успех, сервер обычно возвращает токен сразу.
-      // Если нет, можно вызвать /login автоматически.
-      // Предположим, сервер возвращает токен:
+      // Если токен получен - сразу логиним
       if (response.data.token) {
         login(response.data.token, response.data.userId);
         setMessage("Успешно! Вход...");
       } else {
+        // Иначе переходим на форму логина
         setMessage("Регистрация успешна! Теперь войдите.");
-        setTimeout(() => onToggle(false), 1500); // Перекидываем на логин
+        setTimeout(() => onToggle(false), 1500);
       }
     } catch (error) {
       console.error("Register error:", error);
@@ -46,11 +53,13 @@ function Register({ onToggle }) {
 
   return (
     <form onSubmit={handleRegister} className="flex flex-col gap-4">
+      {/* Заголовок формы */}
       <div className="text-center mb-2">
         <h2 className="text-2xl font-bold text-gray-800">Регистрация</h2>
         <p className="text-sm text-gray-500">Быстро и легко.</p>
       </div>
 
+      {/* Сообщение об успехе/ошибке */}
       {message && (
         <div
           className={`p-3 rounded-lg text-center text-sm font-medium ${
@@ -63,6 +72,7 @@ function Register({ onToggle }) {
         </div>
       )}
 
+      {/* Поле для логина */}
       <Input
         type="text"
         placeholder="Придумайте логин"
@@ -70,6 +80,8 @@ function Register({ onToggle }) {
         onChange={(e) => setUsername(e.target.value)}
         required
       />
+
+      {/* Поле для пароля */}
       <Input
         type="password"
         placeholder="Придумайте пароль"
@@ -78,20 +90,18 @@ function Register({ onToggle }) {
         required
       />
 
+      {/* Юмористическое уведомление */}
       <p className="text-xs text-gray-500 text-center px-4">
-        Нажимая "Регистрация", вы соглашаетесь с нашими Правилами (которых нет). 😂
+        Нажимая "Регистрация", вы соглашаетесь с нашими Правилами (которых нет).
+        😂
       </p>
 
-      <Button
-        type="submit"
-        fullWidth
-        isLoading={isLoading}
-        variant="secondary" 
-      >
+      {/* Кнопка регистрации */}
+      <Button type="submit" fullWidth isLoading={isLoading} variant="secondary">
         Зарегистрироваться
       </Button>
 
-      {/* Кнопка "Назад ко входу" */}
+      {/* Ссылка на форму входа */}
       <div className="text-center mt-2">
         <button
           type="button"

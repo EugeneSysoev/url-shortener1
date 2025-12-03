@@ -1,48 +1,40 @@
-import React, { useState } from "react";
+import React from "react";
 import { useAuth } from "../../hooks/useAuth";
+import { useAuthForm } from "../../hooks/useAuthForm";
 import apiClient from "../../api/apiClient";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 
-// Упрощенная форма входа: только логин и пароль.
+// Компонент регистрации
 function Login({ onToggle }) {
   const { login } = useAuth();
-  const [username, setUsername] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const {
+    username,
+    password,
+    message,
+    isLoading,
+    setUsername,
+    setPassword,
+    setMessage,
+    setIsLoading,
+  } = useAuthForm();
 
-  // Обработчик отправки формы входа
+  // ОБРАБОТЧИК ВХОДА
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage("");
     setIsLoading(true);
 
-    // 1. Выполняем запрос на вход
+    // ПОПЫТКА ВХОДА
     try {
       const response = await apiClient.post("/auth/login", {
         username,
         password,
       });
 
-      // 2. Если успех, сохраняем токен и ID пользователя
-      console.log("🔐 Login response data:", response.data);
-      console.log("🔐 Login - userId в ответе:", response.data.userId);
-      console.log(
-        "🔐 Login - token в ответе:",
-        response.data.token ? "Есть" : "Нет"
-      );
-
-      // Извлекаем userId из ответа или из токена, если не пришел напрямую
-      let userIdToUse = response.data.userId;
-      if (!userIdToUse && response.data.token) {
-        const payload = JSON.parse(atob(response.data.token.split(".")[1]));
-        userIdToUse = payload.userId;
-        console.log("🔐 Login - userId из токена:", userIdToUse);
-      }
-
-      // Вызываем функцию login из контекста
-      login(response.data.token, userIdToUse);
+      // Успешный вход - сохраняем токен
+      console.log("🔐 Login response:", response.data);
+      login(response.data.token, response.data.userId);
     } catch (error) {
       console.error("Login error:", error);
       const errorMsg =
@@ -53,15 +45,17 @@ function Login({ onToggle }) {
     }
   };
 
-  // JSX формы входа
+  // РЕНДЕР ФОРМЫ ВХОДА
   return (
     <form onSubmit={handleLogin} className="flex flex-col gap-4">
+      {/* Сообщение об ошибке */}
       {message && (
         <div className="p-3 rounded-lg text-center text-sm font-medium bg-red-100 text-red-600 border border-red-200">
           {message}
         </div>
       )}
 
+      {/* Поле для логина */}
       <Input
         type="text"
         placeholder="Имя пользователя"
@@ -70,6 +64,8 @@ function Login({ onToggle }) {
         required
         autoFocus
       />
+
+      {/* Поле для пароля */}
       <Input
         type="password"
         placeholder="Пароль"
@@ -78,12 +74,14 @@ function Login({ onToggle }) {
         required
       />
 
+      {/* Кнопка входа */}
       <Button type="submit" fullWidth isLoading={isLoading} variant="primary">
         Войти
       </Button>
 
       <div className="my-2 border-b border-gray-200"></div>
 
+      {/* Кнопка перехода к регистрации */}
       <div className="text-center">
         <Button
           type="button"

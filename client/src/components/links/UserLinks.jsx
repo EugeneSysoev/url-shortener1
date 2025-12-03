@@ -3,39 +3,23 @@ import { useLinks } from "../../hooks/useLinks";
 import { useAuth } from "../../hooks/useAuth";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
+import EmptyState from "../ui/EmptyState"; 
 import { Trash2, Copy, ExternalLink } from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { ru } from "date-fns/locale";
 
-// ФУНКЦИЯ ФОРМАТИРОВАНИЯ ВРЕМЕНИ
-const formatTime = (dateString) => {
-  if (!dateString) return "Неизвестно";
-  return new Date(dateString).toLocaleTimeString("ru-RU", {
-    hour: "2-digit",
-    minute: "2-digit",
-    second: "2-digit",
-  });
-};
-// ФУНКЦИЯ ФОРМАТИРОВАНИЯ ДАТЫ
-const formatDate = (dateString) => {
-  if (!dateString) return "Неизвестно";
-  return new Date(dateString).toLocaleDateString("ru-RU", {
-    day: "numeric",
-    month: "short",
-    year: "numeric",
-  });
-};
-// Компонент для отображения ссылок пользователя
 function UserLinks() {
   const { links, isLoading, error, deleteLink } = useLinks();
   const { userId } = useAuth();
-// Функция для копирования ссылки в буфер обмена
+
   const handleCopy = (url) => {
     navigator.clipboard.writeText(url);
   };
-// Обработка состояний загрузки и ошибок
+
   if (isLoading && links.length === 0) {
     return <p className="text-center text-gray-500 mt-8">Загрузка ссылок...</p>;
   }
-// Обработка ошибок
+
   if (error) {
     return (
       <div className="mt-8 p-4 bg-red-100 text-red-700 rounded-lg text-center">
@@ -43,7 +27,7 @@ function UserLinks() {
       </div>
     );
   }
-// JSX таблицы ссылок пользователя
+
   return (
     <Card className="mt-6">
       <div className="flex justify-between items-center mb-6 border-b pb-4">
@@ -53,12 +37,9 @@ function UserLinks() {
         </span>
       </div>
 
+      {/* EmptyState КОМПОНЕНТ */}
       {links.length === 0 ? (
-        <div className="text-center py-10">
-          <p className="text-gray-500 text-lg">
-            У вас пока нет ссылок. Создайте первую выше!
-          </p>
-        </div>
+        <EmptyState />
       ) : (
         <div className="overflow-x-auto">
           <table className="min-w-full divide-y divide-gray-200">
@@ -115,11 +96,17 @@ function UserLinks() {
                     </a>
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
-                    {/* ⭐️ БЛОК С ДАТОЙ И ВРЕМЕНЕМ */}
                     <div className="flex flex-col">
-                      <span>{formatDate(link.createdAt)}</span>
+                      {/* date-fns */}
+                      <span>
+                        {format(parseISO(link.createdAt), "dd MMM yyyy", {
+                          locale: ru,
+                        })}
+                      </span>
                       <span className="text-xs text-gray-400">
-                        {formatTime(link.createdAt)}
+                        {format(parseISO(link.createdAt), "HH:mm:ss", {
+                          locale: ru,
+                        })}
                       </span>
                     </div>
                   </td>
