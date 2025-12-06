@@ -7,6 +7,8 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const cors = require("cors");
 const fs = require("fs");
+const helmet = require("helmet");
+const rateLimit = require("express-rate-limit");
 
 // Импорт роутеров
 const { apiRouter: apiRouterV1, redirectHandler } = require("./routes/v1/api");
@@ -20,7 +22,7 @@ syncDatabase()
   .then(() => console.log("База данных синхронизирована"))
   .catch((error) => console.error("Ошибка синхронизации БД:", error));
 
-// CORS middleware 
+// CORS middleware
 const corsOptions = {
   origin: process.env.FRONTEND_URL || "http://localhost:5173",
   credentials: true,
@@ -52,6 +54,32 @@ if (process.env.NODE_ENV === "development") {
 }
 
 app.use(cors(corsOptions));
+
+app.use(helmet());
+
+// Общий лимит для всего API
+const apiLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 минут
+  max: 100, // 100 запросов с одного IP
+  message: {
+    error: "Слишком много запросов. Попробуйте позже.",
+  },
+  standardHeaders: true,
+  legacyHeaders: false,
+});
+
+// Строгий лимит для аутентификации
+const authLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 минут
+  max: 5, // 5 попыток входа/регистрации
+  message: {
+    error: "Слишком много попыток входа. Попробуйте через 15 минут.",
+  },
+  skipSuccessfulRequests: true, // Не считать успешные запросы
+});
+
+// Применяем лимитеры
+app.use("/api/", apiLimiter);
 
 // Настройка view engine
 app.set("views", path.join(__dirname, "views"));

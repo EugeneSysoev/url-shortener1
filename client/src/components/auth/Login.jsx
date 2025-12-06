@@ -1,11 +1,11 @@
-import React from "react";
+import React, { useState } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useAuthForm } from "../../hooks/useAuthForm";
 import apiClient from "../../api/apiClient";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
+import { encodeToBase64 } from "../../utils/encoder";
 
-// Компонент регистрации
 function Login({ onToggle }) {
   const { login } = useAuth();
   const {
@@ -19,43 +19,54 @@ function Login({ onToggle }) {
     setIsLoading,
   } = useAuthForm();
 
-  // ОБРАБОТЧИК ВХОДА
+  const [showPassword, setShowPassword] = useState(false);
+
   const handleLogin = async (e) => {
     e.preventDefault();
     setMessage("");
     setIsLoading(true);
 
-    // ПОПЫТКА ВХОДА
     try {
-      const response = await apiClient.post("/auth/login", {
+      const encodedPassword = encodeToBase64(password);
+
+      console.log("🔐 Отправляем закодированный пароль:", {
         username,
-        password,
+        passwordLength: password.length,
+        encodedPassword,
       });
 
-      // Успешный вход - сохраняем токен
-      console.log("🔐 Login response:", response.data);
+      const response = await apiClient.post("/auth/login", {
+        username,
+        password: encodedPassword,
+      });
+
+      console.log("✅ Login response:", response.data);
       login(response.data.token, response.data.userId);
     } catch (error) {
       console.error("Login error:", error);
-      const errorMsg =
-        error.response?.data?.message || "Ошибка входа. Проверьте данные.";
+
+      let errorMsg = "Ошибка входа. Проверьте данные.";
+
+      if (error.response?.status === 429) {
+        errorMsg = "Слишком много попыток. Подождите 15 минут.";
+      } else if (error.response?.data?.message) {
+        errorMsg = error.response.data.message;
+      }
+
       setMessage(errorMsg);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // РЕНДЕР ФОРМЫ ВХОДА
   return (
     <form onSubmit={handleLogin} className="flex flex-col gap-4">
-      {/* Сообщение об ошибке */}
       {message && (
         <div className="p-3 rounded-lg text-center text-sm font-medium bg-red-100 text-red-600 border border-red-200">
           {message}
         </div>
       )}
 
-      {/* Поле для логина */}
       <Input
         type="text"
         placeholder="Имя пользователя"
@@ -65,23 +76,29 @@ function Login({ onToggle }) {
         autoFocus
       />
 
-      {/* Поле для пароля */}
-      <Input
-        type="password"
-        placeholder="Пароль"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+      <div className="relative">
+        <Input
+          type={showPassword ? "text" : "password"}
+          placeholder="Пароль"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+        <button
+          type="button"
+          onClick={() => setShowPassword(!showPassword)}
+          className="absolute right-3 top-1/2 transform -translate-y-1/2 text-sm text-blue-600 hover:text-blue-800"
+        >
+          {showPassword ? "Скрыть" : "Показать"}
+        </button>
+      </div>
 
-      {/* Кнопка входа */}
       <Button type="submit" fullWidth isLoading={isLoading} variant="primary">
         Войти
       </Button>
 
       <div className="my-2 border-b border-gray-200"></div>
 
-      {/* Кнопка перехода к регистрации */}
       <div className="text-center">
         <Button
           type="button"

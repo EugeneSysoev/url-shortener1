@@ -8,4 +8,5 @@ const Input = ({ className = "", ...props }) => {
   return <input className={`${defaultStyles} ${className}`} {...props} />;
 };
 
+
 export default Input;
