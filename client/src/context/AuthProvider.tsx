@@ -1,12 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, ReactNode } from "react";
 import { AuthContext } from "./AuthContext";
+import { User } from "../types";
+
+// Тип для пропсов провайдера
+interface AuthProviderProps {
+  children: ReactNode;
+}
 
 // Провайдер контекста аутентификации
-export const AuthProvider = ({ children }) => {
-  const [token, setToken] = useState(localStorage.getItem("authToken"));
-  const [userId, setUserId] = useState(localStorage.getItem("userId"));
-  const [isAuthenticated, setIsAuthenticated] = useState(!!token);
-  const [isAuthReady, setIsAuthReady] = useState(false);
+export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
+  const [token, setToken] = useState<string | null>(
+    localStorage.getItem("authToken")
+  );
+  const [userId, setUserId] = useState<string | null>(
+    localStorage.getItem("userId")
+  );
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!token);
+  const [isAuthReady, setIsAuthReady] = useState<boolean>(false);
 
   // Проверка состояния аутентификации при загрузке приложения
   useEffect(() => {
@@ -20,11 +30,11 @@ export const AuthProvider = ({ children }) => {
   }, [token]);
 
   // Функция для входа пользователя
-  const login = useCallback((newToken, newUserId) => {
+  const login = useCallback((newToken: string, newUserId: number) => {
     localStorage.setItem("authToken", newToken);
-    localStorage.setItem("userId", newUserId);
+    localStorage.setItem("userId", newUserId.toString());
     setToken(newToken);
-    setUserId(newUserId);
+    setUserId(newUserId.toString());
     setIsAuthenticated(true);
   }, []);
 
@@ -36,6 +46,16 @@ export const AuthProvider = ({ children }) => {
     setUserId(null);
     setIsAuthenticated(false);
   }, []);
+
+  // Создаем объект пользователя
+  const user: User | null =
+    userId && token
+      ? {
+          id: parseInt(userId),
+          username: "", // Здесь можно добавить логику получения username
+          token,
+        }
+      : null;
 
   // Показать экран загрузки, пока не будет готово состояние аутентификации
   if (!isAuthReady) {
@@ -70,13 +90,13 @@ export const AuthProvider = ({ children }) => {
 
   // Значения и функции, предоставляемые через контекст аутентификации
   const value = {
+    user,
     token,
-    userId,
+    userId: userId ? parseInt(userId) : null,
     isAuthenticated,
     isAuthReady,
     login,
     logout,
-    db: null,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

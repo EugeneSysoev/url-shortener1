@@ -1,18 +1,18 @@
-import React from "react";
-import { useLinks } from "../../hooks/useLinks";
 import { useAuth } from "../../hooks/useAuth";
+import { useLinks } from "../../hooks/useLinks";
 import Card from "../ui/Card";
 import Button from "../ui/Button";
-import EmptyState from "../ui/EmptyState"; 
+import EmptyState from "../ui/EmptyState";
 import { Trash2, Copy, ExternalLink } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { ru } from "date-fns/locale";
+import { Link } from "../../types";
 
 function UserLinks() {
   const { links, isLoading, error, deleteLink } = useLinks();
-  const { userId } = useAuth();
+  const { user } = useAuth();
 
-  const handleCopy = (url) => {
+  const handleCopy = (url: string) => {
     navigator.clipboard.writeText(url);
   };
 
@@ -32,9 +32,11 @@ function UserLinks() {
     <Card className="mt-6">
       <div className="flex justify-between items-center mb-6 border-b pb-4">
         <h2 className="text-2xl font-bold text-gray-800">Ваши ссылки</h2>
-        <span className="text-xs bg-gray-100 text-gray-500 py-1 px-2 rounded">
-          ID: {userId}
-        </span>
+        {user && (
+          <span className="text-xs bg-gray-100 text-gray-500 py-1 px-2 rounded">
+            ID: {user.id}
+          </span>
+        )}
       </div>
 
       {/* EmptyState КОМПОНЕНТ */}
@@ -60,7 +62,7 @@ function UserLinks() {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {links.map((link) => (
+              {links.map((link: Link) => (
                 <tr
                   key={`${link.id}-${link.createdAt}`}
                   className="hover:bg-gray-50 transition"
@@ -97,7 +99,6 @@ function UserLinks() {
                   </td>
                   <td className="px-4 py-4 whitespace-nowrap text-sm text-gray-500 hidden md:table-cell">
                     <div className="flex flex-col">
-                      {/* date-fns */}
                       <span>
                         {format(parseISO(link.createdAt), "dd MMM yyyy", {
                           locale: ru,
