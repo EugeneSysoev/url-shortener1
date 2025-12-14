@@ -1,26 +1,55 @@
-import { useState, useCallback } from "react";
-import apiClient from "../../api/apiClient.js";
+import { useState, useCallback, FormEvent } from "react";
+import apiClient from "../../api/apiClient";
 import { useLinks } from "../../hooks/useLinks";
 
-// Пользовательский хук для сокращения URL
-export const useShortener = () => {
-  const { fetchLinks } = useLinks();
-  const [longUrl, setLongUrl] = useState("");
-  const [shortUrl, setShortUrl] = useState("");
-  const [error, setError] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+// Типы для ответа API
+interface ShortenUrlResponse {
+  shortUrl: string;
+}
 
-  // Обработчик отправки формы сокращения URL
+// Интерфейс состояния хука
+interface UseShortenerReturn {
+  longUrl: string;
+  shortUrl: string;
+  error: string;
+  isLoading: boolean;
+  setLongUrl: (url: string) => void;
+  handleSubmit: (e: FormEvent<HTMLFormElement>) => Promise<void>;
+  handleCopy: () => void;
+}
+
+// Тип для ошибок API
+interface ApiError extends Error {
+  response?: {
+    data?: {
+      message?: string;
+    };
+  };
+}
+
+/**
+ * Пользовательский хук для сокращения URL
+ */
+export const useShortener = (): UseShortenerReturn => {
+  const { fetchLinks } = useLinks();
+  const [longUrl, setLongUrl] = useState<string>("");
+  const [shortUrl, setShortUrl] = useState<string>("");
+  const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  /**
+   * Обработчик отправки формы сокращения URL
+   */
   const handleSubmit = useCallback(
-    async (e) => {
+    async (e: FormEvent<HTMLFormElement>): Promise<void> => {
       e.preventDefault();
       setError("");
       setShortUrl("");
       setIsLoading(true);
 
       // Получаем URL из формы или из состояния
-      const formData = new FormData(e.target);
-      const urlToSubmit = formData.get("url") || longUrl;
+      const formData = new FormData(e.currentTarget);
+      const urlToSubmit = (formData.get("url") as string) || longUrl;
 
       console.log("🔐 useShortener - START", { urlToSubmit });
 
@@ -38,9 +67,12 @@ export const useShortener = () => {
       // ВЫПОЛНЕНИЕ ЗАПРОСА НА СОКРАЩЕНИЕ
       try {
         console.log("🔐 useShortener - Making API request");
-        const response = await apiClient.post("/make_link_short", {
-          longUrl: urlToSubmit,
-        });
+        const response = await apiClient.post<ShortenUrlResponse>(
+          "/make_link_short",
+          {
+            longUrl: urlToSubmit,
+          }
+        );
 
         console.log("🔐 useShortener - API Response:", response.data);
 
@@ -58,10 +90,13 @@ export const useShortener = () => {
           console.error("🔐 useShortener - No shortUrl in response");
           setError("Ошибка: сервер не вернул короткую ссылку");
         }
-      } catch (err) {
+      } catch (err: unknown) {
         console.error("🔐 useShortener - ERROR:", err);
+
+        // Типизируем ошибку
+        const apiError = err as ApiError;
         setError(
-          err.response?.data?.message ||
+          apiError.response?.data?.message ||
             "Не удалось сократить ссылку. Возможно, ваш токен истёк или URL недействителен."
         );
       } finally {
@@ -69,11 +104,13 @@ export const useShortener = () => {
         setIsLoading(false);
       }
     },
-    [fetchLinks] // Зависимость от fetchLinks
+    [fetchLinks, longUrl] // Добавлена зависимость от longUrl
   );
 
-  // Обработчик копирования короткой ссылки в буфер обмена
-  const handleCopy = useCallback(() => {
+  /**
+   * Обработчик копирования короткой ссылки в буфер обмена
+   */
+  const handleCopy = useCallback((): void => {
     if (shortUrl) {
       navigator.clipboard.writeText(shortUrl);
       console.log("Ссылка скопирована: " + shortUrl);

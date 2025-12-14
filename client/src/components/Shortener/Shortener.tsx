@@ -1,10 +1,9 @@
-import React from "react";
+import { ChangeEvent, FormEvent } from "react";
 import { useShortener } from "./useShortener";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import Card from "../ui/Card";
 
-// Компонент для сокращения URL
 function Shortener() {
   const {
     longUrl,
@@ -16,16 +15,23 @@ function Shortener() {
     handleCopy,
   } = useShortener();
 
-  // JSX компонента сокращения URL
+  const handleInputChange = (e: ChangeEvent<HTMLInputElement>): void => {
+    setLongUrl(e.target.value);
+  };
+
+  const handleFormSubmit = (e: FormEvent<HTMLFormElement>): void => {
+    e.preventDefault();
+    handleSubmit(e);
+  };
+
   return (
     <Card className="max-w-4xl mx-auto mb-6">
-      {/* Форма ввода */}
-      <form onSubmit={handleSubmit} className="flex gap-3 mb-6">
+      <form onSubmit={handleFormSubmit} className="flex gap-3 mb-6">
         <Input
           type="url"
           name="url"
           value={longUrl}
-          onChange={(e) => setLongUrl(e.target.value)}
+          onChange={handleInputChange}
           placeholder="Введите длинный URL здесь..."
           required
           disabled={isLoading}
@@ -35,14 +41,12 @@ function Shortener() {
         </Button>
       </form>
 
-      {/* Вывод ошибок */}
       {error && (
         <p className="text-red-700 p-3 bg-red-100 border-l-4 border-red-500 rounded-md mb-4 text-sm">
           {error}
         </p>
       )}
 
-      {/* Вывод результата и кнопки копирования */}
       {shortUrl && (
         <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
           <a

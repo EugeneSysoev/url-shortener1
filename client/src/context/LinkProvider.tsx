@@ -1,16 +1,22 @@
-import React, { useState, useEffect, useCallback } from "react";
-import { LinkContext } from "./LinkContext.jsx";
-import { useAuth } from "../hooks/useAuth.js";
-import apiClient from "../api/apiClient.js";
+import React, { useState, useEffect, useCallback, ReactNode } from "react";
+import { LinkContext } from "./LinkContext";
+import { useAuth } from "../hooks/useAuth";
+import apiClient from "../api/apiClient";
+import { Link } from "../types";
 
-export const LinkProvider = ({ children }) => {
+// Тип для пропсов провайдера
+interface LinkProviderProps {
+  children: ReactNode;
+}
+
+export const LinkProvider: React.FC<LinkProviderProps> = ({ children }) => {
   const { isAuthenticated, isAuthReady } = useAuth();
-  const [links, setLinks] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [links, setLinks] = useState<Link[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Загрузка ссылок пользователя
-  const fetchLinks = useCallback(async () => {
+  const fetchLinks = useCallback(async (): Promise<void> => {
     if (!isAuthenticated || !isAuthReady) {
       setLinks([]);
       setIsLoading(false);
@@ -22,9 +28,9 @@ export const LinkProvider = ({ children }) => {
 
     try {
       const response = await apiClient.get("/user_links");
-      const fetchedLinks = response.data.links || [];
+      const fetchedLinks: Link[] = response.data.links || [];
       setLinks(fetchedLinks);
-    } catch (err) {
+    } catch (err: any) {
       const errorMsg = err.response?.data?.message || "Ошибка загрузки ссылок.";
       setError(errorMsg);
       setLinks([]);
@@ -35,7 +41,7 @@ export const LinkProvider = ({ children }) => {
 
   // Создание новой ссылки
   const createLink = useCallback(
-    async (longUrl) => {
+    async (longUrl: string): Promise<string | null> => {
       if (!isAuthenticated) {
         setError("Вы не авторизованы.");
         return null;
@@ -45,9 +51,9 @@ export const LinkProvider = ({ children }) => {
         const response = await apiClient.post("/make_link_short", { longUrl });
 
         // Оптимистичное обновление - добавляем сразу
-        const newLink = {
+        const newLink: Link = {
           id: response.data.linkId,
-          shortCode: response.data.shortUrl?.split("/").pop(),
+          shortCode: response.data.shortUrl?.split("/").pop() || "",
           longUrl,
           shortUrl: response.data.shortUrl,
           createdAt: new Date().toISOString(),
@@ -57,7 +63,7 @@ export const LinkProvider = ({ children }) => {
         setError(null);
 
         return response.data.shortUrl;
-      } catch (err) {
+      } catch (err: any) {
         const errorMsg =
           err.response?.data?.message || "Ошибка при сокращении ссылки.";
         setError(errorMsg);
@@ -69,7 +75,7 @@ export const LinkProvider = ({ children }) => {
 
   // Удаление ссылки
   const deleteLink = useCallback(
-    async (linkId) => {
+    async (linkId: number): Promise<void> => {
       if (!isAuthenticated) {
         setError("Вы не авторизованы.");
         return;
@@ -83,7 +89,7 @@ export const LinkProvider = ({ children }) => {
           currentLinks.filter((link) => link.id !== linkId)
         );
         setError(null);
-      } catch (err) {
+      } catch (err: any) {
         const errorMsg =
           err.response?.data?.message || "Ошибка при удалении ссылки.";
         setError(errorMsg);

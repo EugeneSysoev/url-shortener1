@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useAuth } from "./hooks/useAuth";
 import Login from "./components/auth/Login";
 import Register from "./components/auth/Register";
@@ -6,15 +6,14 @@ import Shortener from "./components/Shortener/Shortener";
 import UserLinks from "./components/links/UserLinks";
 import Button from "./components/ui/Button";
 
+// Главный компонент приложения
 function App() {
   const { isAuthenticated, logout } = useAuth();
   const [isRegistering, setIsRegistering] = useState(false);
 
-  // Авторизованный пользователь
   if (isAuthenticated) {
     return (
       <div className="min-h-screen bg-gray-100">
-        {/* Шапка */}
         <header className="bg-white shadow-sm border-b border-gray-200">
           <div className="max-w-6xl mx-auto px-6 py-4">
             <div className="flex justify-between items-center">
@@ -22,9 +21,9 @@ function App() {
                 <img
                   src="/logo.png"
                   alt="URL Сократитель"
-                  className="h-12 w-18"
+                  className="h-12 w-20"
                 />
-                <h1 className="text-2xl font-bold text-gray-800">
+                <h1 className="text-3xl font-bold text-gray-800">
                   Сервис сокращения URL
                 </h1>
               </div>
@@ -39,7 +38,6 @@ function App() {
           </div>
         </header>
 
-        {/* Основной контент */}
         <div className="max-w-6xl mx-auto p-6">
           <main className="pt-8">
             <Shortener />
@@ -50,11 +48,9 @@ function App() {
     );
   }
 
-  // Неавторизованный пользователь (логин/регистрация)
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto w-full flex flex-col md:flex-row items-center md:items-start justify-center md:gap-16 px-4">
-        {/* Левая колонка - логотип и описание */}
         <div className="text-center md:text-left mb-10 md:mb-0 md:mt-10 max-w-lg">
           <div className="flex items-center justify-center md:justify-start gap-3 mb-4">
             <h1 className="text-4xl md:text-5xl font-extrabold text-[#1877F2] drop-shadow-sm">
@@ -66,7 +62,6 @@ function App() {
           </p>
         </div>
 
-        {/* Правая колонка - форма */}
         <div className="w-full max-w-md">
           <div className="bg-white py-8 px-4 shadow-xl sm:rounded-lg sm:px-10 border border-gray-200">
             {isRegistering ? (
@@ -78,7 +73,7 @@ function App() {
 
           <p className="mt-6 text-center text-sm text-gray-500">
             <span className="font-medium text-black">
-              Технологии: ⚛️ React + 🎨 Tailwind CSS + ⚡Vite
+              Технологии: ⚛️ React + 🎨 Tailwind CSS + ⚡Vite + 📘 TypeScript
             </span>
           </p>
         </div>

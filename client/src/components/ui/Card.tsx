@@ -1,7 +1,11 @@
 import React from "react";
 
-// Переиспользуемый компонент Card
-const Card = ({ children, className = "", ...props }) => {
+interface CardProps extends React.HTMLAttributes<HTMLDivElement> {
+  children: React.ReactNode;
+  className?: string;
+}
+
+const Card: React.FC<CardProps> = ({ children, className = "", ...props }) => {
   const defaultStyles =
     "bg-white p-4 md:p-6 rounded-lg shadow-xl border border-gray-200";
 

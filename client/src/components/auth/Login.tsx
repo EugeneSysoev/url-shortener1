@@ -1,12 +1,13 @@
-import React, { useState } from "react";
+import React, { useState, FormEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useAuthForm } from "../../hooks/useAuthForm";
 import apiClient from "../../api/apiClient";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
 import { encodeToBase64 } from "../../utils/encoder";
+import { LoginProps } from "../../types";
 
-function Login({ onToggle }) {
+const Login: React.FC<LoginProps> = ({ onToggle }) => {
   const { login } = useAuth();
   const {
     username,
@@ -19,9 +20,9 @@ function Login({ onToggle }) {
     setIsLoading,
   } = useAuthForm();
 
-  const [showPassword, setShowPassword] = useState(false);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage("");
     setIsLoading(true);
@@ -42,7 +43,7 @@ function Login({ onToggle }) {
 
       console.log("✅ Login response:", response.data);
       login(response.data.token, response.data.userId);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Login error:", error);
 
       let errorMsg = "Ошибка входа. Проверьте данные.";
@@ -71,7 +72,9 @@ function Login({ onToggle }) {
         type="text"
         placeholder="Имя пользователя"
         value={username}
-        onChange={(e) => setUsername(e.target.value)}
+        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+          setUsername(e.target.value)
+        }
         required
         autoFocus
       />
@@ -81,7 +84,9 @@ function Login({ onToggle }) {
           type={showPassword ? "text" : "password"}
           placeholder="Пароль"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+            setPassword(e.target.value)
+          }
           required
         />
         <button
@@ -112,6 +117,6 @@ function Login({ onToggle }) {
       </div>
     </form>
   );
-}
+};
 
 export default Login;

@@ -1,12 +1,13 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, FormEvent, ChangeEvent } from "react";
 import { useAuth } from "../../hooks/useAuth";
 import { useAuthForm } from "../../hooks/useAuthForm";
 import apiClient from "../../api/apiClient";
 import Button from "../ui/Button";
 import Input from "../ui/Input";
-import { encodeToBase64 } from "../../utils/encoder"; // Убрали isBase64
+import { encodeToBase64 } from "../../utils/encoder";
+import { RegisterProps } from "../../types";
 
-function Register({ onToggle }) {
+const Register: React.FC<RegisterProps> = ({ onToggle }) => {
   const { login } = useAuth();
   const {
     username,
@@ -19,10 +20,10 @@ function Register({ onToggle }) {
     setIsLoading,
   } = useAuthForm();
 
-  const [showPassword, setShowPassword] = useState(false);
-  const [usernameValid, setUsernameValid] = useState(true);
-  const [passwordValid, setPasswordValid] = useState(true);
-  const [passwordStrength, setPasswordStrength] = useState(0);
+  const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [usernameValid, setUsernameValid] = useState<boolean>(true);
+  const [passwordValid, setPasswordValid] = useState<boolean>(true);
+  const [passwordStrength, setPasswordStrength] = useState<number>(0);
 
   // Валидация имени пользователя
   useEffect(() => {
@@ -55,7 +56,7 @@ function Register({ onToggle }) {
     // Сложность
     if (/[a-z]/.test(password)) strength += 1;
     if (/[A-Z]/.test(password)) strength += 1;
-    if (/\d/.test(password)) strength += 1; // Убрали лишний escape
+    if (/\d/.test(password)) strength += 1;
     if (/[!@#$%^&*(),.?":{}|<>]/.test(password)) strength += 1;
 
     // Проверка на слабые пароли
@@ -66,7 +67,7 @@ function Register({ onToggle }) {
     setPasswordStrength(isWeak ? 0 : strength);
   }, [password]);
 
-  const handleRegister = async (e) => {
+  const handleRegister = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setMessage("");
 
@@ -104,7 +105,7 @@ function Register({ onToggle }) {
         setMessage("✅ Регистрация успешна! Теперь войдите.");
         setTimeout(() => onToggle(false), 1500);
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Register error:", error);
 
       let errorMsg = "Ошибка регистрации. Проверьте данные.";
@@ -116,7 +117,7 @@ function Register({ onToggle }) {
       } else if (error.response?.data?.errors) {
         // Обработка ошибок валидации с сервера
         const validationErrors = error.response.data.errors
-          .map((err) => err.msg)
+          .map((err: any) => err.msg)
           .join(", ");
         errorMsg = `Ошибки: ${validationErrors}`;
       }
@@ -128,14 +129,14 @@ function Register({ onToggle }) {
   };
 
   // Функция для отображения индикатора сложности пароля
-  const getPasswordStrengthText = () => {
+  const getPasswordStrengthText = (): string => {
     if (password.length === 0) return "Введите пароль";
     if (passwordStrength <= 2) return "Слабый";
     if (passwordStrength <= 4) return "Средний";
     return "Сильный";
   };
 
-  const getPasswordStrengthColor = () => {
+  const getPasswordStrengthColor = (): string => {
     if (password.length === 0) return "bg-gray-200";
     if (passwordStrength <= 2) return "bg-red-500";
     if (passwordStrength <= 4) return "bg-yellow-500";
@@ -177,7 +178,9 @@ function Register({ onToggle }) {
           type="text"
           placeholder="Придумайте логин (3-30 символов)"
           value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setUsername(e.target.value)
+          }
           required
           className={
             !usernameValid && username.length > 0
@@ -216,7 +219,9 @@ function Register({ onToggle }) {
           type={showPassword ? "text" : "password"}
           placeholder="Придумайте надежный пароль"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e: ChangeEvent<HTMLInputElement>) =>
+            setPassword(e.target.value)
+          }
           required
           className={
             !passwordValid && password.length > 0
@@ -335,6 +340,6 @@ function Register({ onToggle }) {
       </div>
     </form>
   );
-}
+};
 
 export default Register;
