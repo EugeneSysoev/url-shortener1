@@ -1,6 +1,10 @@
 import React from "react";
 import { useShortener } from "./useShortener";
+import Button from "../ui/Button";
+import Input from "../ui/Input";
+import Card from "../ui/Card";
 
+// Компонент для сокращения URL
 function Shortener() {
   const {
     longUrl,
@@ -12,60 +16,53 @@ function Shortener() {
     handleCopy,
   } = useShortener();
 
+  // JSX компонента сокращения URL
   return (
-    // Основной контейнер:
-    <div className="max-w-xl mx-auto mt-10 p-8 bg-white shadow-xl rounded-xl">
-      <h1 className="text-3xl font-bold text-center text-gray-800 mb-6">
-        Сократитель URL
-      </h1>
-
+    <Card className="max-w-4xl mx-auto mb-6">
       {/* Форма ввода */}
       <form onSubmit={handleSubmit} className="flex gap-3 mb-6">
-        <input
+        <Input
           type="url"
+          name="url"
           value={longUrl}
           onChange={(e) => setLongUrl(e.target.value)}
           placeholder="Введите длинный URL здесь..."
           required
-          // Инпут:
-          className="flex-1 p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500"
           disabled={isLoading}
         />
-        <button
-          type="submit"
-          // Кнопка:
-          className="bg-blue-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition duration-150"
-          disabled={isLoading}
-        >
-          {isLoading ? "Сокращение..." : "Сократить"}
-        </button>
+        <Button type="submit" isLoading={isLoading}>
+          Сократить
+        </Button>
       </form>
 
       {/* Вывод ошибок */}
       {error && (
-        // Ошибка:
-        <p className="text-red-700 p-3 bg-red-100 border-l-4 border-red-500 rounded-md mb-4">
+        <p className="text-red-700 p-3 bg-red-100 border-l-4 border-red-500 rounded-md mb-4 text-sm">
           {error}
         </p>
       )}
 
       {/* Вывод результата и кнопки копирования */}
       {shortUrl && (
-        // Результат:
-        <div className="flex items-center justify-between p-4 bg-green-100 border border-green-300 rounded-lg">
-          <span className="text-lg font-medium text-green-800 wrap-break-words pr-4">
+        <div className="flex flex-col sm:flex-row items-center justify-between p-4 bg-green-50 border border-green-200 rounded-lg">
+          <a
+            href={shortUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-lg font-medium text-blue-600 hover:underline wrap-break-words pr-4 mb-2 sm:mb-0"
+          >
             {shortUrl}
-          </span>
-          <button
+          </a>
+          <Button
             onClick={handleCopy}
-            // Кнопка копирования:
-            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-150"
+            variant="secondary"
+            className="py-2 px-4 whitespace-nowrap"
           >
             Копировать 📋
-          </button>
+          </Button>
         </div>
       )}
-    </div>
+    </Card>
   );
 }
 
